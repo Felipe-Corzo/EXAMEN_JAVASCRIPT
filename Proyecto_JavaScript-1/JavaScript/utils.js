@@ -1,0 +1,88 @@
+const loadingElement = document.getElementById('loading');
+const cartCountElement = document.getElementById('carrito');
+
+
+function showLoading() {
+    if (loadingElement) {
+        loadingElement.classList.add('active');
+    }
+}
+
+function hideLoading() {
+    if (loadingElement) {
+        loadingElement.classList.remove('active');
+    }
+}
+
+function showToCartNotification(productTitle) {
+    alert(`Product "${productTitle}" has been added to the cart.`);
+}
+
+function updateCarstCount() {
+    if (cartCountElement) {
+        cartCountElement.textContent = getTotalItems();
+    }
+}
+
+function getTotalItems() {
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    return cart.reduce((total, item) => total + item.quantity, 0);
+}
+
+
+function addProductToCart(product, quantity = 1) {
+    const cart = getCart();
+    const productInCart = cart.find(item => item.id === product.id);
+    if (productInCart) {
+        productInCart.quantity += quantity;
+    } else {
+        cart.push({ ...product, quantity });
+    }
+    saveCartToLocalStorage(cart);
+    return cart;
+}
+
+function getCart() {
+    return JSON.parse(localStorage.getItem('cart')) || [];
+}
+
+function saveCartToLocalStorage(cart) {
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCarstCount();
+}
+
+// ================================================================================================================NUEVO (PAGINACION)
+
+let paginaGlobal = 1;
+const productosporPagina = 6;
+
+
+function getPaginatedItems(items, page, porPagina) {
+    const inicio = (page - 1) * porPagina;
+    const fin = inicio + porPagina;
+    return items.slice(inicio, fin);
+}
+
+
+function renderPaginacionItems(totalItems, callback) {
+    const paginacionContainer = document.getElementById('pagination');
+    if (!paginacionContainer) return;
+    
+
+    paginacionContainer.innerHTML = '';
+    const pageCount = Math.ceil(totalItems / productosporPagina);
+
+    for (let i = 1; i <= pageCount; i++) {
+        const btn = document.createElement('button');
+        btn.innerText = i;
+        btn.classList.add('btn-page');
+        if (i === paginaGlobal) btn.classList.add('active');
+
+        btn.onclick = () => {
+            paginaGlobal = i;
+            callback(); 
+        };
+        paginacionContainer.appendChild(btn);
+    }
+}
+
